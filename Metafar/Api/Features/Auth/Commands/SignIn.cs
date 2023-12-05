@@ -76,8 +76,9 @@ public class SignIn : ICarterModule
 
             var claims = new List<Claim>
             {
-                new (JwtRegisteredClaimNames.Name, userCard!.UserName),
-                new (JwtRegisteredClaimNames.Sid, userCard!.AccountNumber)
+                new (JwtRegisteredClaimNames.Sid, userCard!.UserId.ToString()),
+                new (JwtRegisteredClaimNames.Name, userCard.UserName),
+                new (JwtRegisteredClaimNames.Jti, userCard.AccountNumber)
             };
 
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key!));

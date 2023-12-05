@@ -1,10 +1,10 @@
-﻿using Api.Entities.AppSettings;
+﻿using Api.Common.Interfaces;
+using Api.Common.Services;
 using Api.Infrastructure;
 using Carter;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
@@ -21,31 +21,36 @@ public static class DependencyInjection
         {
             x.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
-                Description = "JWT Authorization header using the bearer scheme",
                 Name = "Authorization",
+                Type = SecuritySchemeType.ApiKey,
+                Scheme = "Bearer",
+                BearerFormat = "JWT",
                 In = ParameterLocation.Header,
-                Type = SecuritySchemeType.ApiKey
+                Description = "JSON Web Token based security",
             });
 
-            x.AddSecurityRequirement(new OpenApiSecurityRequirement
+            var scheme = new OpenApiSecurityScheme
             {
+                Reference = new OpenApiReference
                 {
-                    new OpenApiSecurityScheme
-                    {
-                        Reference = new OpenApiReference
-                                    {
-                                        Id = "Bearer",
-                                        Type = ReferenceType.SecurityScheme
-                                    }
-                    },
-                    new List<string>()
-                }
-            });
+                    Id = "Bearer",
+                    Type = ReferenceType.SecurityScheme
+                },
+                In = ParameterLocation.Header
+            };
+
+            var requirement = new OpenApiSecurityRequirement
+            {
+                { scheme, Array.Empty<string>() }
+            };
+
+            x.AddSecurityRequirement(requirement);
         });
         services.AddCarter();
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
         services.AddMediatR(config => config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
 
         return services;
     }
@@ -63,22 +68,28 @@ public static class DependencyInjection
     public static IServiceCollection AddSecurity(this IServiceCollection services, IConfiguration configuration)
     {
         services
-            //.AddHttpContextAccessor()
-            .AddAuthorization()
-            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(options =>
+        .AddHttpContextAccessor()
+        .AddAuthentication(o =>
+        {
+            o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            o.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(o =>
+        {
+            o.TokenValidationParameters = new TokenValidationParameters
             {
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = configuration["JwtSettings:Issuer"],
-                    ValidAudience = configuration["JwtSettings:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtSettings:Key"]!))
-                };
-            });
+                ValidIssuer = configuration["JwtSettings:Issuer"],
+                ValidAudience = configuration["JwtSettings:Audience"],
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtSettings:Key"]!)),
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = false,
+                ValidateIssuerSigningKey = true
+            };
+        });
+
+        services.AddAuthorization();
 
         return services;
     }

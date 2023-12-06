@@ -11,4 +11,9 @@ public partial class User
     public decimal CurrentBalance { get; set; }
 
     public virtual ICollection<Card> Cards { get; set; } = new List<Card>();
+
+    public void UpdateCurrentBalance(User user, decimal amount)
+    {
+        user.CurrentBalance -= amount;
+    }
 }

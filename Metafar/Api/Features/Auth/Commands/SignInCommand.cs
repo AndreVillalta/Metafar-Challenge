@@ -18,7 +18,7 @@ using System.Text;
 namespace Api.Features.Auth.Commands;
 
 [Authorize]
-public class SignIn : ICarterModule
+public class SignInCommand : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
@@ -26,6 +26,7 @@ public class SignIn : ICarterModule
         {
             return await mediator.Send(request);
         })
+        .WithTags("Login")
         .ProducesValidationProblem()
         .Produces(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status401Unauthorized)

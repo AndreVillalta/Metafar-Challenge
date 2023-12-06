@@ -1,5 +1,4 @@
 ﻿using Api.Common.Interfaces;
-using Api.Entities;
 using Api.Features.Cards.Requests;
 using Api.Features.Cards.Responses;
 using Api.Infrastructure;
@@ -22,7 +21,7 @@ public class GetCurrentBalanceQuery : ICarterModule
             return await mediator.Send(new UserInfoRequest(cardNumber));
         })
         .WithName(nameof(GetCurrentBalanceQuery))
-        .WithTags(nameof(User))
+        .WithTags("Saldo")
         .ProducesValidationProblem()
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)

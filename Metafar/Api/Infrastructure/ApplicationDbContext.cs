@@ -7,7 +7,7 @@ public partial class ApplicationDbContext : DbContext
 {
     public ApplicationDbContext() { }
 
-    public ApplicationDbContext(DbContextOptions options) : base(options) { }
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
     public virtual DbSet<Card> Cards { get; set; }
 
@@ -15,14 +15,11 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-       => optionsBuilder.UseSqlServer("Server=ANDRE\\MSSQLSERVER22;Database=MetafarDB;Trusted_Connection=True;TrustServerCertificate=True;");
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Card>(entity =>
         {
-            entity.HasKey(e => e.CardId).HasName("PK__Cards__55FECD8E5FFDE0F8");
+            entity.HasKey(e => e.CardId).HasName("PK_Cards");
 
             entity.Property(e => e.CardId).HasColumnName("CardID");
             entity.Property(e => e.CardNumber).HasMaxLength(50);
@@ -32,12 +29,12 @@ public partial class ApplicationDbContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.Cards)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Cards__UserID__3C69FB99");
+                .HasConstraintName("FK_Cards_Users");
         });
 
         modelBuilder.Entity<Transaction>(entity =>
         {
-            entity.HasKey(e => e.TransactionId).HasName("PK__Transact__55433A4BE6B2AB1D");
+            entity.HasKey(e => e.TransactionId).HasName("PK_Transactions");
 
             entity.Property(e => e.TransactionId).HasColumnName("TransactionID");
             entity.Property(e => e.Amount).HasColumnType("decimal(18, 2)");
@@ -48,12 +45,12 @@ public partial class ApplicationDbContext : DbContext
             entity.HasOne(d => d.Card).WithMany(p => p.Transactions)
                 .HasForeignKey(d => d.CardId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Transacti__CardI__3F466844");
+                .HasConstraintName("FK_Transactions_Cards");
         });
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PK__Users__1788CCACB2B50BA6");
+            entity.HasKey(e => e.UserId).HasName("PK_Users");
 
             entity.Property(e => e.UserId).HasColumnName("UserID");
             entity.Property(e => e.AccountNumber).HasMaxLength(50);

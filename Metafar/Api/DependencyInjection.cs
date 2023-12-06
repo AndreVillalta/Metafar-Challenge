@@ -59,9 +59,8 @@ public static class DependencyInjection
     {
         services.AddDbContext<ApplicationDbContext>(options =>
         {
-            options.UseSqlServer(configuration.GetConnectionString("DatabaseSQLServer"));
+            options.UseSqlServer(configuration.GetConnectionString("Database"));
         });
-
         return services;
     }
 

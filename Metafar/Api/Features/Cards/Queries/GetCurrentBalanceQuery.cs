@@ -70,6 +70,8 @@ public class GetCurrentBalanceQuery : ICarterModule
                                     ))
                                     .FirstOrDefaultAsync(cancellationToken);
 
+            if (userInfoResponse is null) return Results.NotFound("Sin información");
+
             return Results.Ok(userInfoResponse);
         }
 
